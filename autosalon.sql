@@ -103,6 +103,10 @@ for each row
 begin
     :new.country_id := country_seq.nextval;
 end;
+create or replace procedure coutnries_upd(v_country_id countries.country_id%type,
+                                        v_country_name countries.country_name%type)
+as begin
+
 
 create or replace trigger city_auto_increment
 before insert on cities
@@ -173,11 +177,26 @@ begin
     insert into countries(country_name)
         values(country_name);
 end;
+
+create or replace procedure countries_upd(v_country_id countries.country_id%type,
+                                            v_country_name countries.country_name%type)
+as begin
+    update countries
+        set country_name = v_country_name
+    where country_id = v_country_id;
+end;
  
 create or replace procedure cities_ins(v_city_name cities.city_name%type,v_country_id cities.country_id%type) as
 begin
     insert into cities(city_name,country_id)
         values(v_city_name,v_country_id);
+end;
+
+create or replace procedure cities_upd(v_city_id cities.city_id%type,v_city_name cities.city_name%type)
+as begin
+    update cities
+        set city_name = v_city_name
+    where city_id = v_city_id;
 end;
  
 create or replace procedure clients_ins(
@@ -204,11 +223,29 @@ begin
                  v_phone_number,
                  v_city_id);
 end;
- 
+
+create or replace procedure clients_telephone_upd(v_client_id clients.client_id%type,
+                                        v_number clients.phone_number%type)
+as begin
+    update clients
+        set phone_number = v_number
+    where client_id = v_client_id;
+end;
+select * from clients;
+exec clients_telephone_upd(2, '0587456988');
+
 create or replace procedure positions_ins(v_position_name positions.position_name%type) as
 begin
     insert into positions(position_name)
         values(v_position_name);
+end;
+
+create or replace procedure positions_upd(v_position_id positions.position_id%type,
+                                        v_position_name positions.position_name%type)
+as begin
+    update positions
+        set position_name = v_position_name
+    where position_id = v_position_id;
 end;
  
 create or replace procedure employees_ins(
@@ -230,6 +267,15 @@ begin
                  v_phone_number,
                  v_position_id);
 end;
+
+create or replace procedure employees_telephone_upd(v_employee_id employees.employee_id%type,
+                                            v_number employees.phone_number%type)
+as begin
+    update employees
+        set phone_number = v_number
+    where employee_id = v_employee_id;
+end;
+
  
 create or replace procedure brands_ins(
 v_brand brands.brand%type)
@@ -237,6 +283,14 @@ as
 begin
     insert into brands(brand)
         values(v_brand);
+end;
+
+create or replace procedure brands_upd(v_brand_id brands.brand_id%type,
+                                        v_brand brands.brand%type)
+as begin
+    update brands
+        set brand = v_brand
+    where brand_id = v_brand_id;
 end;
  
 create or replace procedure models_ins(
@@ -247,7 +301,15 @@ begin
     insert into models("model",brand_id)
         values(v_model,v_brand_id);
 end;
- 
+
+create or replace procedure models_upd(v_model_id models.model_id%type,
+                                        v_model models."model"%type)
+as begin
+    update models
+        set "model" = v_model
+    where model_id = v_model_id;
+end;
+
 create or replace procedure colors_ins(
 v_color colors.color%type)
 as
@@ -255,7 +317,15 @@ begin
     insert into colors(color)
         values(v_color);
 end;
- 
+
+create or replace procedure colors_upd(v_color_id number,
+                                        v_color colors.color%type)
+as begin 
+    update colors
+        set color = v_color
+    where color_id = v_color_id;
+end;
+
 create or replace procedure cars_ins(
 v_kilometers cars.kilometers%type,
 v_available_cars_count cars.available_cars_count%type,
@@ -268,7 +338,15 @@ begin
     insert into cars(kilometers,available_cars_count,price,manufacture_year,model_id,color_id)
         values(v_kilometers,v_available_cars_count,v_price,v_manufacture_year,v_model_id,v_color_id);
 end;
- 
+
+create or replace procedure cars_available_car_count_upd(v_car_id cars.car_id%type,
+                                                        v_car_count_left cars.available_cars_count%type)
+as begin
+    update cars
+        set available_cars_count = v_car_count_left
+    where car_id = v_car_id;
+end;
+
 create or replace procedure sales_ins(
 v_sale_amount sales.sale_amount%type,
 v_discount sales.discount%type,
@@ -280,6 +358,14 @@ begin
     insert into sales(sale_amount,discount,sale_day,employee_id,client_id)
         values(v_sale_amount,v_discount,v_sale_day,v_employee_id,v_client_id);
 end;
+
+create or replace procedure sales_discount_upd(v_sale_id sales.sale_id%type,
+                                    v_discount sales.discount%type)
+as begin
+    update sales
+        set discount = v_discount
+    where sale_id = v_sale_id;
+end;
  
 create or replace procedure sales_cars_ins(
 v_car_id sales_cars.car_id%type,
@@ -288,6 +374,14 @@ as
 begin
     insert into sales_cars(car_id,sale_id)
         values(v_car_id,v_sale_id);
+end;
+
+create or replace procedure sales_cars_upd(v_sale_id sales_cars.sale_id%type,
+                                            v_car_id sales_cars.car_id%type)
+as begin 
+    update sales_cars
+        set car_id = v_car_id
+    where sale_id = v_sale_id;
 end;
  
 --Inserting Rows into tables
@@ -384,6 +478,7 @@ begin
     sales_ins(3400,0,sysdate,1,4);
     sales_ins(22400,0,sysdate,2,3);
     sales_ins(12400,0,sysdate,1,1);
+    sales_ins(163450,0,sysdate,1,3);
 end;
  
 begin
@@ -392,8 +487,11 @@ begin
     sales_cars_ins(3,3);
     sales_cars_ins(4,4);
     sales_cars_ins(5,5);
-    sales_cars_ins(21,6);
+    sales_cars_ins(6,6);
+    sales_cars_ins(13,7);
 end;
+
+select * from sales_cars;
  
 --Select car by given brand
 create or replace procedure search_car_by_brand(v_brand brands.brand%type)
@@ -845,3 +943,22 @@ as begin
     end;
 end;
 exec saled_for_period('12-NOV-2025', '20-DEC-2025');
+
+create or update trigger car_cannot_be_saled_twice
+before insert on sales_cars 
+for each row
+    declare _count number
+begin 
+    select
+        count(*)
+    into _count
+    from sales_cars
+    where car_id = :new.car_id
+
+    if _count != 0 then
+        raise_application_error(
+            -20000,
+            'Колата не може да бъде продадена 2 пъти.'
+        );
+    end if;
+end;
