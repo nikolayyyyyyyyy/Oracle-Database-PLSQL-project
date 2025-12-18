@@ -944,21 +944,25 @@ as begin
 end;
 exec saled_for_period('12-NOV-2025', '20-DEC-2025');
 
-create or update trigger car_cannot_be_saled_twice
+create or replace trigger car_cannot_be_saled_twice
 before insert on sales_cars 
 for each row
-    declare _count number
+    declare is_car_sold number;
 begin 
     select
         count(*)
-    into _count
+    into is_car_sold
     from sales_cars
-    where car_id = :new.car_id
+    where car_id = :new.car_id;
 
-    if _count != 0 then
+    if is_car_sold != 0 then
         raise_application_error(
             -20000,
             'Колата не може да бъде продадена 2 пъти.'
         );
     end if;
+end;
+select * from sales_cars;
+begin
+    sales_cars_ins(1,2);
 end;
