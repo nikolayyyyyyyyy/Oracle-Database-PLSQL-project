@@ -103,10 +103,6 @@ for each row
 begin
     :new.country_id := country_seq.nextval;
 end;
-create or replace procedure coutnries_upd(v_country_id countries.country_id%type,
-                                        v_country_name countries.country_name%type)
-as begin
-
 
 create or replace trigger city_auto_increment
 before insert on cities
@@ -840,8 +836,8 @@ as begin
         end loop;
     end;
 end;
-exec sales_per_price_limit(2);
- 
+exec sales_per_price_limit(10);
+
 --Sales by client
 create or replace procedure sales_by_client(v_client_id number)
 as begin
