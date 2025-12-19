@@ -8,6 +8,10 @@ create sequence model_seq start with 1 increment by 1;
 create sequence color_seq start with 1 increment by 1;
 create sequence car_seq start with 1 increment by 1;
 create sequence sale_seq start with 1 increment by 1;
+create sequence sales_cars_seq start with 1 increment by 1;
+
+drop sequence sale_seq;
+drop table sales cascade constraint;
 
 --Create tables--
 create table countries(
@@ -38,7 +42,7 @@ create table positions(
 position_id number primary key,
 position_name varchar(50) not null unique
 );
- 
+
 create table employees(
 employee_id number primary key,
 first_name varchar(50) not null,
@@ -48,7 +52,7 @@ phone_number varchar(10),
 position_id number,
 constraint employee_position_FK foreign key (position_id) references positions(position_id)
 );
- 
+
 create table brands(
 brand_id number primary key,
 brand varchar(50) not null unique
@@ -88,8 +92,9 @@ client_id number not null,
 constraint sales_employee_FK foreign key (employee_id) references employees(employee_id),
 constraint sale_clients_FK foreign key (client_id) references clients(client_id)
 );
- 
+
 create table sales_cars(
+sales_cars_id number primary key,
 car_id number not null,
 sale_id number not null,
 constraint sales_cars_car_FK foreign key (car_id) references cars(car_id),
@@ -165,6 +170,13 @@ before insert on sales
 for each row
 begin
     :new.sale_id := sale_seq.nextval;
+end;
+
+create or replace trigger sales_cars_t_auto_increment
+before insert on sales_cars
+for each row
+begin
+    :new.sales_cars_id := sales_cars_seq.nextval;
 end;
  
 --Create procedures for insert values--
@@ -272,7 +284,6 @@ as begin
     where employee_id = v_employee_id;
 end;
 
- 
 create or replace procedure brands_ins(
 v_brand brands.brand%type)
 as
@@ -372,12 +383,18 @@ begin
         values(v_car_id,v_sale_id);
 end;
 
-create or replace procedure sales_cars_upd(v_sale_id sales_cars.sale_id%type,
+create or replace procedure sales_cars_upd(v_sales_cars_id sales_cars.sales_cars_id%type,
                                             v_car_id sales_cars.car_id%type)
 as begin 
     update sales_cars
         set car_id = v_car_id
-    where sale_id = v_sale_id;
+    where sales_cars_id = v_sales_cars_id;
+end;
+
+create or replace procedure sales_cars_delete(v_sales_cars_id sales_cars.sales_cars_id%type)
+as begin
+    delete sales_cars
+    where sales_cars_id = v_sales_cars_id;
 end;
  
 --Inserting Rows into tables
@@ -446,6 +463,7 @@ end;
  
 begin
     cars_ins(190000,3,12400,TO_DATE('03-11-2010', 'DD-MM-YYYY'),1,1);
+    cars_ins(190000,3,12400,TO_DATE('03-11-2010', 'DD-MM-YYYY'),1,1);
     cars_ins(190400,2,11300,TO_DATE('11-01-2019', 'DD-MM-YYYY'),2,1);
     cars_ins(220000,1,10400,TO_DATE('04-05-2015', 'DD-MM-YYYY'),3,2);
     cars_ins(263000,4,22400,TO_DATE('10-02-2022', 'DD-MM-YYYY'),4,3);
@@ -461,21 +479,26 @@ begin
     cars_ins(160000,4,310900,TO_DATE('24-03-2014', 'DD-MM-YYYY'),14,1);
     cars_ins(160000,6,320900,TO_DATE('24-03-2014', 'DD-MM-YYYY'),15,3);
 end;
- 
-begin
-    cars_ins(190000,3,12400,TO_DATE('03-11-2010', 'DD-MM-YYYY'),1,1);
-end;
- 
+
 begin
     sales_ins(12400,0,sysdate,1,1);
+    sales_ins(10400,0,sysdate,1,1);
+    sales_ins(340000,0,sysdate,2,1);
+    sales_ins(310900,0,sysdate,2,2);
     sales_ins(11300,0,sysdate,2,1);
     sales_ins(10400,0,sysdate,1,2);
     sales_ins(22400,0,sysdate,2,3);
+    sales_ins(320900,0,sysdate,2,3);
+    sales_ins(11900,0,sysdate,2,4);
+    sales_ins(10400,0,sysdate,1,3);
     sales_ins(3400,0,sysdate,1,4);
     sales_ins(22400,0,sysdate,2,3);
     sales_ins(12400,0,sysdate,1,1);
     sales_ins(163450,0,sysdate,1,3);
 end;
+select * from sales;
+drop table sales cascade constraint;
+drop sequence sales_cars_seq;
  
 begin
     sales_cars_ins(1,1);
@@ -484,7 +507,14 @@ begin
     sales_cars_ins(4,4);
     sales_cars_ins(5,5);
     sales_cars_ins(6,6);
-    sales_cars_ins(13,7);
+    sales_cars_ins(7,7);
+    sales_cars_ins(8,8);
+    sales_cars_ins(9,9);
+    sales_cars_ins(10,10);
+    sales_cars_ins(11,11);
+    sales_cars_ins(12,12);
+    sales_cars_ins(13,13);
+    sales_cars_ins(14,14);
 end;
 
 select * from sales_cars;
@@ -529,7 +559,7 @@ as begin
                 end loop;
     end;
 end;
-exec search_car_by_brand('Тесла');
+exec search_car_by_brand('Ауди');
 
 --Select car by given model
 create or replace procedure search_car_by_model(v_model models."model"%type)
@@ -836,7 +866,7 @@ as begin
         end loop;
     end;
 end;
-exec sales_per_price_limit(10);
+exec sales_per_price_limit(4);
 
 --Sales by client
 create or replace procedure sales_by_client(v_client_id number)
@@ -886,6 +916,8 @@ as begin
         end loop;
     end;
 end;
+select * from sales;
+select * from sales_cars;
 exec sales_by_client(1);
 
 --Sales for period
