@@ -10,8 +10,8 @@ create sequence car_seq start with 1 increment by 1;
 create sequence sale_seq start with 1 increment by 1;
 create sequence sales_cars_seq start with 1 increment by 1;
 
-drop sequence sale_seq;
-drop table sales cascade constraint;
+drop sequence car_seq;
+drop table cars cascade constraint;
 
 --Create tables--
 create table countries(
@@ -172,7 +172,7 @@ begin
     :new.sale_id := sale_seq.nextval;
 end;
 
-create or replace trigger sales_cars_t_auto_increment
+create or replace trigger sales_cars_auto_increment
 before insert on sales_cars
 for each row
 begin
@@ -232,15 +232,23 @@ begin
                  v_city_id);
 end;
 
-create or replace procedure clients_telephone_upd(v_client_id clients.client_id%type,
+create or replace procedure clients_upd(v_client_id clients.client_id%type,
+                                        v_client_first_name clients.first_name%type,
+                                        v_client_middle_name clients.middle_name%type,
+                                        v_client_last_name clients.last_name%type,
+                                        v_client_available_amount clients.available_amount%type,
+                                        v_client_address clients.address%type,
                                         v_number clients.phone_number%type)
 as begin
     update clients
-        set phone_number = v_number
+        set first_name = v_client_first_name,
+            middle_name = v_client_middle_name,
+            last_name = v_client_last_name,
+            available_amount = v_client_available_amount,
+            address = v_client_address,
+            phone_number = v_number
     where client_id = v_client_id;
 end;
-select * from clients;
-exec clients_telephone_upd(2, '0587456988');
 
 create or replace procedure positions_ins(v_position_name positions.position_name%type) as
 begin
@@ -264,10 +272,7 @@ v_phone_number employees.phone_number%type,
 v_position_id employees.position_id%type)
 as
 begin
-    insert into employees(first_name,
-                        middle_name,
-                        last_name,
-                        phone_number,
+    insert into employees(first_name,middle_name,last_name,phone_number,
                         position_id)
           values(v_first_name,
                  v_middle_name,
@@ -276,11 +281,20 @@ begin
                  v_position_id);
 end;
 
-create or replace procedure employees_telephone_upd(v_employee_id employees.employee_id%type,
-                                            v_number employees.phone_number%type)
+create or replace procedure employees_upd(
+v_employee_id employees.employee_id%type,
+v_employee_first_name employees.first_name%type,
+v_employee_middle_name employees.middle_name%type,
+v_employee_last_name employees.last_name%type,
+v_employee_position_id employees.position_id%type,
+v_number employees.phone_number%type)
 as begin
     update employees
-        set phone_number = v_number
+        set first_name = v_employee_first_name,
+            middle_name = v_employee_middle_name,
+            last_name = v_employee_last_name,
+            position_id = v_employee_position_id,
+            phone_number = v_number
     where employee_id = v_employee_id;
 end;
 
@@ -310,10 +324,12 @@ begin
 end;
 
 create or replace procedure models_upd(v_model_id models.model_id%type,
-                                        v_model models."model"%type)
+                                        v_model models."model"%type,
+                                        v_brand_id models.brand_id%type)
 as begin
     update models
-        set "model" = v_model
+        set "model" = v_model,
+            brand_id = v_brand_id
     where model_id = v_model_id;
 end;
 
@@ -342,15 +358,31 @@ v_model_id cars.model_id%type,
 v_color_id cars.color_id%type)
 as
 begin
-    insert into cars(kilometers,available_cars_count,price,manufacture_year,model_id,color_id)
-        values(v_kilometers,v_available_cars_count,v_price,v_manufacture_year,v_model_id,v_color_id);
+    insert into cars(kilometers,available_cars_count,price,manufacture_year,model_id,
+                    color_id)
+        values(v_kilometers,
+            v_available_cars_count,
+            v_price,
+            v_manufacture_year,
+            v_model_id,
+            v_color_id);
 end;
 
-create or replace procedure cars_available_car_count_upd(v_car_id cars.car_id%type,
-                                                        v_car_count_left cars.available_cars_count%type)
+create or replace procedure cars_upd(v_car_id cars.car_id%type,
+v_car_kilometers cars.kilometers%type,
+v_car_available_car_count cars.available_cars_count%type,
+v_car_price cars.price%type,
+v_car_manufacture_year cars.manufacture_year%type,
+v_car_model_id cars.model_id%type,
+v_car_color_id cars.color_id%type)
 as begin
     update cars
-        set available_cars_count = v_car_count_left
+        set kilometers = v_car_kilometers,
+            available_cars_count = v_car_available_car_count,
+            price = v_car_price,
+            manufacture_year = v_car_manufacture_year,
+            model_id = v_car_model_id,
+            color_id = v_car_color_id            
     where car_id = v_car_id;
 end;
 
@@ -366,11 +398,19 @@ begin
         values(v_sale_amount,v_discount,v_sale_day,v_employee_id,v_client_id);
 end;
 
-create or replace procedure sales_discount_upd(v_sale_id sales.sale_id%type,
-                                    v_discount sales.discount%type)
+create or replace procedure sales_upd(v_sale_id sales.sale_id%type,
+v_sale_sale_amount sales.sale_amount%type,
+v_sale_discount sales.discount%type,
+v_sale_sale_day sales.sale_day%type,
+v_sale_employee_id sales.employee_id%type,
+v_sale_client_id sales.client_id%type)
 as begin
     update sales
-        set discount = v_discount
+        set sale_amount = v_sale_sale_amount,
+            discount = v_sale_discount,
+            sale_day = v_sale_sale_day,
+            employee_id = v_sale_employee_id,
+            client_id = v_sale_client_id
     where sale_id = v_sale_id;
 end;
  
@@ -384,10 +424,12 @@ begin
 end;
 
 create or replace procedure sales_cars_upd(v_sales_cars_id sales_cars.sales_cars_id%type,
-                                            v_car_id sales_cars.car_id%type)
+                                            v_car_id sales_cars.car_id%type,
+                                            v_sale_id sales_cars.sale_id%type)
 as begin 
     update sales_cars
-        set car_id = v_car_id
+        set car_id = v_car_id,
+            sale_id = v_sale_id
     where sales_cars_id = v_sales_cars_id;
 end;
 
@@ -396,20 +438,18 @@ as begin
     delete sales_cars
     where sales_cars_id = v_sales_cars_id;
 end;
- 
+
 --Inserting Rows into tables
 begin
     countries_ins('България');
-    countries_ins('Германия');
 end;
+select * from countries;
 
 begin
     cities_ins('Смядово',1);
     cities_ins('Шумен',1);
-    cities_ins('Варна',1);
-    cities_ins('Бургас',1);
-    cities_ins('София',1);
 end;
+select * from cities;
 
 begin
     clients_ins('Николай','Христов','Николаев',1000000,'Ул. Преслав Номер.4','0879318112',1);
@@ -417,106 +457,92 @@ begin
     clients_ins('Атанас','Атанасов','Генчев',150000,'Ул. Преслав Номер.1','0215879654',1);
     clients_ins('Гиновева','Йорданова','Николаева',1000,'Ул. Център Номер.10','0987878787',1);
 end;
+select * from clients;
 
 begin
     positions_ins('Продавач');
-    positions_ins('Касиер');
 end;
+select * from positions;
 
 begin
     employees_ins('Гиновева','Данаилова','Николаева','0215478965',1);
-    employees_ins('Кристина','Станиславова','Николаева','0236547858',2);
+    employees_ins('Кристина','Станиславова','Николаева','0236547858',1);
 end;
+select * from employees;
 
 begin
     brands_ins('Ауди');
     brands_ins('БМВ');
     brands_ins('Мерцедес');
-    brands_ins('Тесла');
     brands_ins('Фолксваген');
 end;
+select * from brands;
  
 begin
     models_ins('A6',1);
     models_ins('A5',1);
     models_ins('A7',1);
-    models_ins('A8',1);
-    models_ins('A3',1);
     models_ins('M3',2);
     models_ins('M2',2);
     models_ins('M5',2);
-    models_ins('M6',2);
     models_ins('CLS',3);
     models_ins('Sclass',3);
     models_ins('SL-500',3);
-    models_ins('ML',3);
-    models_ins('RSX',4);
-    models_ins('Passat',5);
+    models_ins('Passat',4);
+    models_ins('Golf 3',4);
+    models_ins('Touareg',4);
 end;
+select * from models;
  
 begin
     colors_ins('Черен');
     colors_ins('Сив');
-    colors_ins('Металик');
-    colors_ins('Бял');
 end;
- 
-begin
-    cars_ins(190000,3,12400,TO_DATE('03-11-2010', 'DD-MM-YYYY'),1,1);
-    cars_ins(190000,3,12400,TO_DATE('03-11-2010', 'DD-MM-YYYY'),1,1);
-    cars_ins(190400,2,11300,TO_DATE('11-01-2019', 'DD-MM-YYYY'),2,1);
-    cars_ins(220000,1,10400,TO_DATE('04-05-2015', 'DD-MM-YYYY'),3,2);
-    cars_ins(263000,4,22400,TO_DATE('10-02-2022', 'DD-MM-YYYY'),4,3);
-    cars_ins(280000,6,3400,TO_DATE('10-01-2005', 'DD-MM-YYYY'),5,4);
-    cars_ins(173000,10,11900,TO_DATE('21-01-2011', 'DD-MM-YYYY'),6,1);
-    cars_ins(163040,2,18900,TO_DATE('21-01-2011', 'DD-MM-YYYY'),7,1);
-    cars_ins(160000,1,32900,TO_DATE('24-03-2014', 'DD-MM-YYYY'),8,4);
-    cars_ins(211000,4,33200,TO_DATE('24-03-2014', 'DD-MM-YYYY'),9,4);
-    cars_ins(100000,3,320900,TO_DATE('24-11-2024', 'DD-MM-YYYY'),10,4);
-    cars_ins(170000,10,340000,TO_DATE('20-02-2025', 'DD-MM-YYYY'),11,2);
-    cars_ins(130500,1,45900,TO_DATE('24-03-2014', 'DD-MM-YYYY'),12,1);
-    cars_ins(163450,12,29900,TO_DATE('02-02-2010', 'DD-MM-YYYY'),13,2);
-    cars_ins(160000,4,310900,TO_DATE('24-03-2014', 'DD-MM-YYYY'),14,1);
-    cars_ins(160000,6,320900,TO_DATE('24-03-2014', 'DD-MM-YYYY'),15,3);
-end;
+select * from colors;
 
 begin
-    sales_ins(12400,0,sysdate,1,1);
-    sales_ins(10400,0,sysdate,1,1);
-    sales_ins(340000,0,sysdate,2,1);
-    sales_ins(310900,0,sysdate,2,2);
-    sales_ins(11300,0,sysdate,2,1);
-    sales_ins(10400,0,sysdate,1,2);
-    sales_ins(22400,0,sysdate,2,3);
-    sales_ins(320900,0,sysdate,2,3);
-    sales_ins(11900,0,sysdate,2,4);
-    sales_ins(10400,0,sysdate,1,3);
-    sales_ins(3400,0,sysdate,1,4);
-    sales_ins(22400,0,sysdate,2,3);
-    sales_ins(12400,0,sysdate,1,1);
-    sales_ins(163450,0,sysdate,1,3);
+    cars_ins(190000,1,12400,TO_DATE('03-11-2010', 'DD-MM-YYYY'),1,1);
+    cars_ins(190000,2,12400,TO_DATE('03-11-2010', 'DD-MM-YYYY'),1,2);
+    cars_ins(190400,2,11300,TO_DATE('11-01-2019', 'DD-MM-YYYY'),2,1);
+    cars_ins(190400,2,11300,TO_DATE('11-01-2019', 'DD-MM-YYYY'),3,1);
+    cars_ins(220000,1,10400,TO_DATE('04-05-2015', 'DD-MM-YYYY'),4,1);
+    cars_ins(263000,3,11400,TO_DATE('10-02-2022', 'DD-MM-YYYY'),5,1);
+    cars_ins(280000,4,33400,TO_DATE('10-01-2005', 'DD-MM-YYYY'),6,2);
+    cars_ins(173000,2,11900,TO_DATE('21-01-2011', 'DD-MM-YYYY'),7,2);
+    cars_ins(163040,2,18900,TO_DATE('21-01-2011', 'DD-MM-YYYY'),8,2);
+    cars_ins(160000,3,32900,TO_DATE('24-03-2014', 'DD-MM-YYYY'),9,2);
+    cars_ins(211000,4,33200,TO_DATE('24-03-2014', 'DD-MM-YYYY'),10,1);
+    cars_ins(100000,3,320900,TO_DATE('24-11-2024', 'DD-MM-YYYY'),11,1);
+    cars_ins(170000,4,340000,TO_DATE('20-02-2025', 'DD-MM-YYYY'),12,2);
+end;
+select * from cars;
+
+begin
+    sales_ins(47400,0,TO_DATE('12-12-2025', 'DD-MM-YYYY'),1,1);
+    sales_ins(55200,0,TO_DATE('01-12-2025', 'DD-MM-YYYY'),1,2);
+    sales_ins(63700,0,TO_DATE('20-11-2025', 'DD-MM-YYYY'),2,3);
+    sales_ins(694100,0,TO_DATE('24-11-2025', 'DD-MM-YYYY'),2,4);
 end;
 select * from sales;
-drop table sales cascade constraint;
-drop sequence sales_cars_seq;
  
 begin
     sales_cars_ins(1,1);
-    sales_cars_ins(2,2);
-    sales_cars_ins(3,3);
-    sales_cars_ins(4,4);
-    sales_cars_ins(5,5);
-    sales_cars_ins(6,6);
-    sales_cars_ins(7,7);
-    sales_cars_ins(8,8);
-    sales_cars_ins(9,9);
-    sales_cars_ins(10,10);
-    sales_cars_ins(11,11);
-    sales_cars_ins(12,12);
-    sales_cars_ins(13,13);
-    sales_cars_ins(14,14);
-end;
+    sales_cars_ins(2,1);
+    sales_cars_ins(3,1);
+    sales_cars_ins(4,1);
 
+    sales_cars_ins(5,2);
+    sales_cars_ins(6,2);
+    sales_cars_ins(7,2);
+
+    sales_cars_ins(8,3);
+    sales_cars_ins(9,3);
+    sales_cars_ins(10,3);
+
+    sales_cars_ins(11,4);
+    sales_cars_ins(12,4);
+    sales_cars_ins(13,4);
+end;
 select * from sales_cars;
  
 --Select car by given brand
@@ -559,7 +585,7 @@ as begin
                 end loop;
     end;
 end;
-exec search_car_by_brand('Ауди');
+exec search_car_by_brand('Мерцедес');
 
 --Select car by given model
 create or replace procedure search_car_by_model(v_model models."model"%type)
@@ -743,7 +769,7 @@ as begin
                 join models m on m.model_id = c.model_id
                 join brands b on m.brand_id = b.brand_id
                 join colors cc on c.color_id = cc.color_id
-                where c.price >= v_price
+                where c.price <= v_price
                 order by c.price desc;
     begin
         for car_row in by_price
@@ -764,12 +790,12 @@ as begin
         end loop;
     end;
 end;
-exec search_car_by_price(120000);
+exec search_car_by_price(12400);
 
 -- Top 5 cars by price for the last 3 months
 create or replace procedure top_five_cars_from_sale_for_period_in_days(s_date number)
 as begin
-    dbms_output.put_line('Най-скъпите 3 коли за последните месеци в дни.');
+    dbms_output.put_line('Най-скъпите 2 продажби за последните месеци в дни.');
         declare cursor top_five is
             select * from (
                 select
@@ -784,7 +810,7 @@ as begin
                 where s.sale_day >= sysdate - s_date
                 order by sale_amount desc
             )
-            where rownum <= 3;
+            where rownum <= 2;
     begin
         for sale_row in top_five 
         loop
@@ -832,7 +858,7 @@ as begin
 end;
 exec sum_of_saled_cars_by_brand_and_model;
  
---Last 5 sales order by price
+--Last 3 sales order by price
 create or replace procedure sales_per_price_limit(v_limit number)
 as begin
     dbms_output.put_line('Последните n продадени коли подредени по цена.');
@@ -869,7 +895,7 @@ end;
 exec sales_per_price_limit(4);
 
 --Sales by client
-create or replace procedure sales_by_client(v_client_id number)
+create or replace procedure sales_of_client_by_phone_number(v_client_number varchar)
 as begin
     dbms_output.put_line('Покупки на клиент.');
         declare
@@ -891,7 +917,7 @@ as begin
                 join models m on m.model_id = c.model_id
                 join brands b on b.brand_id = m.brand_id
                 join colors co on co.color_id = c.color_id
-                where cl.client_id = v_client_id
+                where cl.phone_number = v_client_number
                 order by s.sale_amount desc;
     begin
         for sale_row in sales_by_client
@@ -916,9 +942,7 @@ as begin
         end loop;
     end;
 end;
-select * from sales;
-select * from sales_cars;
-exec sales_by_client(1);
+exec sales_of_client_by_phone_number('0879318112');
 
 --Sales for period
 create or replace procedure saled_for_period(v_first_period varchar, v_second_period varchar)
@@ -970,7 +994,7 @@ as begin
         end loop;
     end;
 end;
-exec saled_for_period('12-NOV-2025', '20-DEC-2025');
+exec saled_for_period('01-NOV-2025', '31-DEC-2025');
 
 create or replace trigger car_cannot_be_saled_twice
 before insert on sales_cars 
@@ -990,7 +1014,6 @@ begin
         );
     end if;
 end;
-select * from sales_cars;
 begin
     sales_cars_ins(1,2);
 end;
